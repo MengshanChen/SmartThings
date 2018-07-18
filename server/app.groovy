@@ -1,42 +1,75 @@
-/**
- *  07172018
- *
- *  Copyright 2018 kimi
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- *  in compliance with the License. You may obtain a copy of the License at:
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
- *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
- *  for the specific language governing permissions and limitations under the License.
- *
- */
 definition(
-    name: "07172018",
-    namespace: "kimi2018",
-    author: "kimi",
-    description: "web service smartapps",
+    name: "DoorSensor",
+    namespace: "com.doorsensor",
+    author: "Seattle University IoT Security Research",
+    description: "SmartDoor sensor that incorporates a presence sensor device and a button that actuates on door lock",
     category: "Safety & Security",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
     iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
 preferences {
-  section ("Allow external service to control these things...") {
-    input "switches", "capability.switch", multiple: true, required: true
+  section ("Sensors") {
+    input "key", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multiple: true, required: true
+  }
+  section ("Door and Lock") {
+    input "door", "capability.doorControl", title: "Door", description: "Main door to operate on", required: true
+    input "lock", "capability.lock", title: "Door lock", description: "Actuator for door state", required: true
   }
 }
 
 def installed() {
+  initialize()
 }
 
 def updated() {
+  unsubsribe()
+  initialize()
 }
 
 def initialize() {
-	// TODO: subscribe to attributes, devices, locations, etc.
+  // Sequence: key is present -> lock will unlock -> door will open 
+  subscribe(key, "presence", presenceSensorHandler)
+  subscribe(lock, "lock", lockHandler)
+  subscribe(door, "door", doorControlHandler)
+}
+
+def presenceSensorHandler(evt) {
+  if (evt.value == "present") {
+    def id = getSensorID(evt) 
+    openDoor(id)
+  }
+  else {
+    closeDoor()
+  }
+}
+
+def openDoor(id) {
+  if (door.value == "closed") {
+    lock.unlock
+    door.open
+  }
+  else {
+    // log debug door is already open
+  }
+}
+
+def closeDoor() {
+  if (door.value == "open") {
+    lock.lock
+    door.close
+  }
+  else {
+    // log debug door is not open
+  }
+}
+
+def lockHandler(evt) {
+  // TODO: send out to endpoint? push notification? text?
+}
+
+def doorControlHandler(evt) {
+  // TODO: send out to endpoint? push notification? text?
 }
 
 mappings {
