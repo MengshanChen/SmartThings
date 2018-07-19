@@ -1,4 +1,4 @@
-# SmartThings
+# SU IoT Security Research
 Door Sensor app
 
 Door Sensor has three components:
@@ -7,3 +7,9 @@ Door Sensor has three components:
   Presence sensors
   
 The main door is operated by the lock and the locks are enabled by the presence sensor(s).
+
+*This is a project in progress by Seattle University Computer Science Research (Summer 2018)
+Contributors:
+Prof. David Lillethun
+Erica Chen
+Jared Alonzo
