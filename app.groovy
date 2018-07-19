@@ -19,10 +19,14 @@ preferences {
 }
 
 def installed() {
+  log.debug "Installed with settings: ${settings}"
+  
   initialize()
 }
 
 def updated() {
+  log.debug "Updated with settings: ${settings}"
+
   unsubsribe()
   initialize()
 }
@@ -48,9 +52,11 @@ def openDoor(id) {
   if (door.value == "closed") {
     lock.unlock
     door.open
+
+    log.debug "Door unlocked by: ${id}"
   }
   else {
-    // log debug door is already open
+    log.debug "Door already open"
   }
 }
 
@@ -58,10 +64,16 @@ def closeDoor() {
   if (door.value == "open") {
     lock.lock
     door.close
+
+    log.debug "Door locked"
   }
   else {
-    // log debug door is not open
+    log.debug "Door already closed"
   }
+}
+
+def getSensorID(evt) {
+  // TODO: return the identifier for presence sensor
 }
 
 def lockHandler(evt) {
@@ -85,7 +97,7 @@ mappings {
   }
 }
 
-// TODO: implement event handlers
+// TODO: change endpoints to integrate with new app (switches -> presenceSensors, lock, door)
 // returns a list like
 // [[name: "kitchen lamp", value: "off"], [name: "bathroom", value: "on"]]
 def listSwitches() {
