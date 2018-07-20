@@ -10,7 +10,7 @@ definition(
 
 preferences {
   section ("Sensors") {
-    input "key", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multiple: true, required: true
+    input "keys", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multiple: true, required: true
   }
   section ("Door and Lock") {
     input "door", "capability.doorControl", title: "Door", description: "Main door to operate on", required: true
@@ -19,26 +19,33 @@ preferences {
 }
 
 def installed() {
+  log.debug "Installed with settings: ${settings}"
+  
   initialize()
 }
 
 def updated() {
+  log.debug "Updated with settings: ${settings}"
+
   unsubsribe()
   initialize()
 }
 
 def initialize() {
   // Sequence: key is present -> lock will unlock -> door will open 
-  subscribe(key, "presence", presenceSensorHandler)
+  subscribe(keys, "presence", presenceSensorHandler)
   subscribe(lock, "lock", lockHandler)
   subscribe(door, "door", doorControlHandler)
 }
 
 def presenceSensorHandler(evt) {
+  // sensor is in proximity
   if (evt.value == "present") {
+    // get the specific sensor id
     def id = getSensorID(evt) 
     openDoor(id)
   }
+  // no sensors in proximity
   else {
     closeDoor()
   }
@@ -48,9 +55,11 @@ def openDoor(id) {
   if (door.value == "closed") {
     lock.unlock
     door.open
+
+    log.debug "Door unlocked by: ${id}"
   }
   else {
-    // log debug door is already open
+    log.debug "Door already open"
   }
 }
 
@@ -58,13 +67,21 @@ def closeDoor() {
   if (door.value == "open") {
     lock.lock
     door.close
+
+    log.debug "Door locked"
   }
   else {
-    // log debug door is not open
+    log.debug "Door already closed"
   }
 }
 
 def lockHandler(evt) {
+  if (evt.value == "lock") {
+    log.debug "Unlock initiated... unlocking"
+  }
+  else {
+    log.debug "Lock initiated... locking"
+  }
   // TODO: send out to endpoint? push notification? text?
 }
 
@@ -72,6 +89,13 @@ def doorControlHandler(evt) {
   // TODO: send out to endpoint? push notification? text?
 }
 
+def getSensorID(evt) {
+  // scan through keys list 
+  keys.find{it.id == evt.deviceId}
+}
+
+
+// this section is outdated**
 mappings {
   path("/switches") {
     action: [
@@ -85,7 +109,7 @@ mappings {
   }
 }
 
-// TODO: implement event handlers
+// TODO: change endpoints to integrate with new app (switches -> presenceSensors, lock, door)
 // returns a list like
 // [[name: "kitchen lamp", value: "off"], [name: "bathroom", value: "on"]]
 def listSwitches() {
