@@ -114,8 +114,8 @@ mappings {
 // [[name: "kitchen lamp", value: "off"], [name: "bathroom", value: "on"]]
 def listSwitches() {
     def resp = []
-    switches.each {
-        resp << [name: it.displayName, value: it.currentValue("switch")]
+    keys.each {
+      resp << [name: it.displayName, value: it.currentValue("keys")]
     }
     return resp
 }
@@ -129,10 +129,10 @@ void updateSwitches() {
     // (note we can do this on the array - the command will be invoked on every element
     switch(command) {
         case "on":
-            switches.on()
+            lock.unlock()
             break
         case "off":
-            switches.off()
+            lock.lock()
             break
         default:
             httpError(400, "$command is not a valid command for all switches specified")
