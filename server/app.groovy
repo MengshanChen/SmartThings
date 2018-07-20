@@ -8,13 +8,21 @@ definition(
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
     iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
-preferences {
-  section ("Sensors") {
-    input "keys", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multiple: true, required: true
+preferences(oauthPage: "deviceAuthorization") {
+  page(name: "deviceAuthorization", title: "", nextPage: "instructionPage", install: false, uninstall: true) {
+    section ("Sensors") {
+      input "keys", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multiple: true, required: true
+    }
+    section ("Door and Lock") {
+      input "door", "capability.doorControl", title: "Door", description: "Main door to operate on", required: true
+      input "lock", "capability.lock", title: "Door lock", description: "Actuator for door state", required: true
+    }
   }
-  section ("Door and Lock") {
-    input "door", "capability.doorControl", title: "Door", description: "Main door to operate on", required: true
-    input "lock", "capability.lock", title: "Door lock", description: "Actuator for door state", required: true
+
+  page(name: "insturctionPage", title: "Device Discovery", install: true) {
+    section() {
+      paragraph "Test"
+    }
   }
 }
 
