@@ -9,20 +9,25 @@ definition(
   iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
   
 preferences {
-  section ("Lock and Keys") {
-    input "keys", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multitple: true, required: false
-    input "lock", "capability.lock", title: "Door lock", description: "Actuator for door state", required: false
+  section("Lock and Keys") {
+    input "keys", "capability.presenceSensor", title: "Key device(s)", description: "Key owner:", multiple: true
+    input "lock", "capability.lock", title: "Door lock", description: "Actuator for door state"
+  }
+
+  section("Notifications") {
+  	input "pushNotifications", "enum", title: "Send push notifications?", options: ["Yes", "No"], required: false
+    input "textNotifications", "phone", title: "Send text messages?", required: false
   }
 }
 
 def installed() {
-  log.debug "Installed with settings: ${settings}"
+  log.info "Installed with settings: ${settings}"
   
   initialize()
 }
 
 def updated() {
-  log.debug "Updated with settings: ${settings}"
+  log.info "Updated with settings: ${settings}"
   
   unsubscribe()
   initialize()
@@ -31,69 +36,86 @@ def updated() {
 def initialize() {
   // Sequence: key is present -> lock will unlock -> door will open
   subscribe(keys, "presence", sensorPresent)
-  subscribe(lock, "lock", operateLock)
 }
 
 def sensorPresent(evt) {
+  keys.present()
   // sensor is in proximity
   if (evt.value == "present") {
     // get the specific sensor id
       def id = getSensorID(evt)
-    initiateUnlock(id)
+    unlockDoor(id)
   }
   // no sensors in proximity
   else {
-    initiateLock()
+    lockDoor()
   }
 }
 
-def operateLock(evt) {
-  if (evt.value == "lock") {
-    log.debug "Unlock initiated... unlocking"
-  }
-  else {
-    log.debug "Lock initiated... locking"
-  }
-  // TODO: send out to endpoint? push notification? text?
-}
-
-def operateDoor(evt) {}
-
-def getSensorID(evt) {
+private getSensorID(evt) {
   // scan through keys list
-  keys?.find{it.id == evt.deviceId}
+  keys.find{it.id == evt.deviceId}
 }
 
-def initiateLock() {
+private lockDoor() {
   if (lock.value == "unlock") {
-    log.debug "Lock initiated... locking"
+    log.info "Lock initiated... locking"
       
-    lock?.lock()
+    lock.lock()
   }
   else {
-    log.debug "Lock is already in place"
+    log.info "Lock is already in place"
   }
 }
 
-def initiateUnlock(id) {
-  if (lock?.value == "lock") {
-    log.debug "Unlock initiated... unlocking"
-    log.trace "${id} is in proximity... unlocking"
-      
-    lock?.unlock()
+private unlockDoor(id) {
+  if (lock.value == "lock") {
+    log.info "Unlock initiated... unlocking"
+    log.info "${id} is in proximity... unlocking"
+
+    lock.unlock()
+    msg = "${id} is present, unlocking"
+    sendNotifications(msg)
   }
   else {
-    log.debug "Unlock is already in place"
+    log.info "Unlock is already in place"
   }
+}
+
+private sendNotifications(msg) {
+  // if push notifications is enabled
+  if (pushNotifications != "No") {
+    log.info "Sending push message"
+
+    sendPush(msg)
+  }
+
+  // if text messages is enabled
+  if (textNotifications) {
+    log.info "Sending text message"
+
+    sendSms(textNotifications, msg)
+  }
+ 
+  // optional send to endpoint
+  listActivity(msg)
 }
 
 mappings {
-  path("/switches") {
+  path("/activity") {
     action: [
-      GET: "listSwitches",
-      POST: "listSwitches"
+      GET: "listActivity",
+      POST: "listActivity"
     ]
   }
+  
+  path("/keys") {
+    action: [
+      GET: "listKeyOwners",
+      POST: "listKeyOwners"
+    ]
+  }
+
   path("/switches/:command") {
     action: [
       PUT: "updateSwitches"
@@ -101,12 +123,22 @@ mappings {
   }
 }
 
-// TODO: change endpoints to integrate with new app (switches -> presenceSensors, lock, door)
-def listSwitches() {
+def listActivity(msg) {
   def resp = []
+  
+  resp << msg
+  resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
+  
+  return resp
+}
+
+def listKeyOwners() {
+  def resp = []
+  
   keys.each {
     resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
   }
+
   return resp
 }
 
@@ -128,6 +160,3 @@ void updateSwitches() {
       httpError(400, "$command is not a valid command!")
   }
 }
-
-// test
-
