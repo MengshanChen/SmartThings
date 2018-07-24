@@ -127,16 +127,21 @@ def listActivity(msg) {
   def resp = []
   
   resp << msg
-  resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
-  
+  //resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
+  keys.each {
+    resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
+  }
   return resp
 }
 
 def listKeyOwners() {
   def resp = []
   
-  keys.each {
-    resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
+  //keys.each {
+    //resp << [name: it.displayName, value: it.currentValue("presenceSensor")]
+  //}
+  lock.each {
+    resp << [name: it.displayName, value: it.currentValue("lock")]
   }
 
   return resp
