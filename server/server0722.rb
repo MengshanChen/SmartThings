@@ -10,6 +10,7 @@ CLIENT_ID = "b66d43e4-c8c4-4f43-8d36-885ddf766bbe"
 CLIENT_SECRET = "fc6c3a9f-5109-47e9-9c5e-2d09f4d627cc"
 
 # We'll store the access token in the session
+#use Rack::Session::Pool, :session_only => false
 use Rack::Session::Cookie, :session_only => false
 
 # This is the URI that will be called with our access
@@ -103,11 +104,10 @@ get '/hello' do
   # get the endpoint from the JSON:
   uri = json[0]['uri']
 
-  # now we can build a URL to our WebServices SmartApp
-  # we will make a GET request to get information about the switch
+  # unlock the door 
   puts 'Unlock the door'
   
-  lockUrl = uri + '/switches/lock'
+  lockUrl = uri + '/switches/unlock'
   getlockURL = URI.parse(lockUrl)
   getlockReq = Net::HTTP::Put.new(getlockURL.request_uri)
   getlockReq['Authorization'] = 'Bearer ' + token
