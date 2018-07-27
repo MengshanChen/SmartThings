@@ -6,10 +6,11 @@ require "net/http"
 require "uri"
 
 # Our client ID and secret, used to get the access token
-CLIENT_ID = "fd897d8e-5906-4edf-8697-20aaf2723624"
-CLIENT_SECRET = "c3c8ed42-f9af-413e-b9d7-33be0d0efb9b"
+CLIENT_ID = "b66d43e4-c8c4-4f43-8d36-885ddf766bbe"
+CLIENT_SECRET = "fc6c3a9f-5109-47e9-9c5e-2d09f4d627cc"
 
 # We'll store the access token in the session
+#use Rack::Session::Pool, :session_only => false
 use Rack::Session::Cookie, :session_only => false
 
 # This is the URI that will be called with our access
@@ -34,10 +35,12 @@ end
 
 # handle requests to the application root
 get '/' do
+    
     if !authenticated?
       redirect '/authorize'
     else
-      redirect '/hello'
+    redirect '/hello'
+    #redirect '/authorize'
     end
 end
 
@@ -101,11 +104,10 @@ get '/hello' do
   # get the endpoint from the JSON:
   uri = json[0]['uri']
 
-  # now we can build a URL to our WebServices SmartApp
-  # we will make a GET request to get information about the switch
+  # unlock the door 
   puts 'Unlock the door'
   
-  lockUrl = uri + '/lock/unlock'
+  lockUrl = uri + '/switches/unlock'
   getlockURL = URI.parse(lockUrl)
   getlockReq = Net::HTTP::Put.new(getlockURL.request_uri)
   getlockReq['Authorization'] = 'Bearer ' + token
@@ -117,7 +119,7 @@ get '/hello' do
   
   puts 'declare the door status'
   
-  doorUrl = uri+ '/lock'
+  doorUrl = uri+ '/keys'
   getdoorURL = URI.parse(doorUrl)
   getdoorReq = URI.parse(doorUrl)
   getdoorReq = Net::HTTP::Get.new(getdoorURL.request_uri)
@@ -127,8 +129,7 @@ get '/hello' do
   
   doorStatus = getdoorHttp.request(getdoorReq)
   
-  '<h3>Response Code</h3>' + doorStatus.code + '<br/><h3>Response Headers</h3>' + doorStatus.to_hash.inspect
-  + '<br/><h3>Response Body</h3>' + doorStatus.body
+  '<h3>Response Code</h3>' + doorStatus.body
 
 end
 
