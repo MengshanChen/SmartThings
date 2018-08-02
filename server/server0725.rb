@@ -6,8 +6,8 @@ require "net/http"
 require "uri"
 
 # Our client ID and secret, used to get the access token
-CLIENT_ID = "e73b5c90-0e38-4831-bc4a-c2bd75be858c"
-CLIENT_SECRET = "36d56b45-8fbf-4911-8248-b3d53495a42e"
+CLIENT_ID = "5e10ffd6-13af-4323-b7ad-ef93728d742b"
+CLIENT_SECRET = "8d9aac24-5ad2-47f7-84b3-147824cd61a3"
 
 # We'll store the access token in the session
 use Rack::Session::Pool, :session_only => false

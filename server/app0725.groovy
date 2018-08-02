@@ -14,7 +14,7 @@ preferences {
         //input "unlock", "capability.lock", title: "Door unlock", description: "Actuator for door state", required: true
     }
 
-    section("Via a push notification and/or an SMS message"){
+    section("Notifications"){
         input("recipients", "contact", title: "Send notifications to") {
         input "phone", "phone", title: "Enter a phone number to get SMS", required: false
         //input "pushAndPhone", "enum", title: "Notify me via Push Notification", required: false, options: ["Yes", "No"]
