@@ -1,3 +1,4 @@
+#unlock the door via web server
 require 'bundler/setup'
 require 'sinatra'
 require 'oauth2'
