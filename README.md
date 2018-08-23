@@ -22,6 +22,6 @@ Contributors:
 
 Prof. David Lillethun
 
-Mengshan( Chen
+Mengshan Chen
 
 Jared Alonzo
